@@ -6,10 +6,10 @@ contract SupplyChain {
     address public owner;
 
     // <skuCount>
-    uint256 public skuCount;
+    uint public skuCount;
 
     // <items mapping>
-    mapping(uint256 => Item) items;
+    mapping(uint => Item) items;
 
     // <enum State: ForSale, Sold, Shipped, Received>
     enum State {
@@ -22,8 +22,8 @@ contract SupplyChain {
     // <struct Item: name, sku, price, state, seller, and buyer>
     struct Item {
         string name;
-        uint256 sku;
-        uint256 price;
+        uint sku;
+        uint price;
         State state;
         address payable seller;
         address payable buyer;
@@ -34,16 +34,16 @@ contract SupplyChain {
      */
 
     // <LogForSale event: sku arg>
-    event LogForSale(uint256 sku);
+    event LogForSale(uint sku);
 
     // <LogSold event: sku arg>
-    event LogSold(uint256 sku);
+    event LogSold(uint sku);
 
     // <LogShipped event: sku arg>
-    event LogShipped(uint256 sku);
+    event LogShipped(uint sku);
 
     // <LogReceived event: sku arg>
-    event LogReceived(uint256 sku);
+    event LogReceived(uint sku);
 
     /*
      * Modifiers
@@ -62,16 +62,16 @@ contract SupplyChain {
         _;
     }
 
-    modifier paidEnough(uint256 _price) {
+    modifier paidEnough(uint _price) {
         require(msg.value >= _price);
         _;
     }
 
-    modifier checkValue(uint256 _sku) {
+    modifier checkValue(uint _sku) {
         //refund them after pay for item (why it is before, _ checks for logic before func)
         _;
-        uint256 _price = items[_sku].price;
-        uint256 amountToRefund = msg.value - _price;
+        uint _price = items[_sku].price;
+        uint amountToRefund = msg.value - _price;
         items[_sku].buyer.transfer(amountToRefund);
     }
 
@@ -83,25 +83,25 @@ contract SupplyChain {
     // that an Item is for sale. Hint: What item properties will be non-zero when
     // an Item has been added?
 
-    modifier forSale(uint256 _sku) {
+    modifier forSale(uint _sku) {
         Item memory item = items[_sku];
         require(item.state == State.ForSale && item.price > 0);
         _;
     }
 
-    modifier sold(uint256 _sku) {
+    modifier sold(uint _sku) {
         Item memory item = items[_sku];
         require(item.state == State.Sold);
         _;
     }
 
-    modifier shipped(uint256 _sku) {
+    modifier shipped(uint _sku) {
         Item memory item = items[_sku];
         require(item.state == State.Shipped);
         _;
     }
 
-    modifier received(uint256 _sku) {
+    modifier received(uint _sku) {
         Item memory item = items[_sku];
         require(item.state == State.Received);
         _;
@@ -113,7 +113,7 @@ contract SupplyChain {
         // 2. Initialize the sku count to 0. Question, is this necessary?
     }
 
-    function addItem(string memory _name, uint256 _price)
+    function addItem(string memory _name, uint _price)
         public
         returns (bool)
     {
@@ -154,7 +154,7 @@ contract SupplyChain {
     //    - check the value after the function is called to make
     //      sure the buyer is refunded any excess ether sent.
     // 6. call the event associated with this function!
-    function buyItem(uint256 sku)
+    function buyItem(uint sku)
         public
         payable
         forSale(sku)
@@ -173,7 +173,7 @@ contract SupplyChain {
     //    - the person calling this function is the seller.
     // 2. Change the state of the item to shipped.
     // 3. call the event associated with this function!
-    function shipItem(uint256 sku)
+    function shipItem(uint sku)
         public
         sold(sku)
         verifyCaller(items[sku].seller)
@@ -188,7 +188,7 @@ contract SupplyChain {
     //    - the person calling this function is the buyer.
     // 2. Change the state of the item to received.
     // 3. Call the event associated with this function!
-    function receiveItem(uint256 sku)
+    function receiveItem(uint sku)
         public
         shipped(sku)
         verifyCaller(items[sku].buyer)
@@ -199,14 +199,14 @@ contract SupplyChain {
     }
 
     // Uncomment the following code block. it is needed to run tests
-    function fetchItem(uint256 _sku)
+    function fetchItem(uint _sku)
         public
         view
         returns (
             string memory name,
-            uint256 sku,
-            uint256 price,
-            uint256 state,
+            uint sku,
+            uint price,
+            uint state,
             address seller,
             address buyer
         )
@@ -214,7 +214,7 @@ contract SupplyChain {
         name = items[_sku].name;
         sku = items[_sku].sku;
         price = items[_sku].price;
-        state = uint256(items[_sku].state);
+        state = uint(items[_sku].state);
         seller = items[_sku].seller;
         buyer = items[_sku].buyer;
         return (name, sku, price, state, seller, buyer);
